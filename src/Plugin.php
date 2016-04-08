@@ -237,6 +237,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 			'doc',
 			'docs',
 			'pear*',
+			'phpdoc*',
 			'*.md',
 		);
 
@@ -274,6 +275,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 			'.php_cs',
 			'*.iml',
 			'composer.lock',
+			'bower*',
 
 			'Makefile',
 		);
