@@ -300,6 +300,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 
 			// Libraries
 			'jonian/composer-cleanup'           => array( $docs, $tests, $system ),
+			'aura/autoload'                     => array( $docs, $tests, $system ),
 			'bensquire/php-image-optim'         => array( $docs, $tests, $system ),
 			'masterminds/html5'                 => array( $docs, $tests, $system, array( 'sami.php', 'bin' ) ),
 			'querypath/querypath'               => array( $docs, $tests, $system, array( 'patches', 'bin', 'phar' ) ),
