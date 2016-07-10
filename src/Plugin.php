@@ -333,6 +333,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 			'symfony/polyfill-mbstring'         => array( $docs, $tests, $system ),
 			'symfony/process'                   => array( $docs, $tests, $system ),
 			'symfony/yaml'                      => array( $docs, $tests, $system ),
+			'tracy/tracy'                       => array( $docs, $tests, $system ),
 			'vegeta/fluxer'                     => array( $docs, $tests, $system ),
 			'zaininnari/html-minifier'          => array( $docs, $tests, $system ),
 
