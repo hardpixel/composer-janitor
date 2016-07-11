@@ -307,6 +307,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 			'querypath/querypath'               => array( $docs, $tests, $system, array( 'patches', 'bin', 'phar' ) ),
 			'predis/predis'                     => array( $docs, $tests, $system ),
 			'danielstjules/stringy'             => array( $docs, $tests, $system ),
+			'maximebf/debugbar'                 => array( $docs, $tests, $system ),
 			'mikehaertl/tmpfile'                => array( $docs, $tests, $system ),
 			'mikehaertl/phpwkhtmltopdf'         => array( $docs, $tests, $system ),
 			'mikehaertl/php-shellcommand'       => array( $docs, $tests, $system ),
