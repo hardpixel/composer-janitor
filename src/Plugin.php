@@ -246,6 +246,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 			'.scrutinizer.yml',
 			'.codeclimate.yml',
 			'.coveralls.yml',
+			'.styleci.yml',
 
 			'build.*',
 			'config.*',
