@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Jonian Composer Cleanup Plugin
- * @package Jonian\Composer\Cleanup
+ * Composer Janitor Plugin
+ * @package Hardpixel\Composer\Janitor
  */
 
-namespace Jonian\Composer\Cleanup;
+namespace Hardpixel\Composer\Janitor;
 
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
@@ -19,7 +19,7 @@ use Composer\Package\BasePackage;
 
 /**
  * Class Plugin
- * @package Jonian\Composer\Cleanup
+ * @package Hardpixel\Composer\Janitor
  *
  * @SuppressWarnings(PHPMD.ShortVariable)
  * @SuppressWarnings(PHPMD.UnusedFormalParameter)
