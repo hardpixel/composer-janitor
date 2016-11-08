@@ -54,13 +54,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 	/**
 	 * {@inheritDoc}
 	 */
-	public function activate(Composer $composer, IOInterface $io)
+	public function activate( Composer $composer, IOInterface $io )
 	{
 		$this->composer   = $composer;
 		$this->io         = $io;
 		$this->config     = $composer->getConfig();
 		$this->filesystem = new Filesystem();
-		$this->rules      = $this->getRules();
 	}
 
 	/**
@@ -92,18 +91,18 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 		/** @var \Composer\Package\CompletePackage $package */
 		$package = $event->getOperation()->getPackage();
 
-		$this->cleanPackage($package);
+		$this->cleanPackage( $package );
 	}
 
 	/**
 	 * Function to run after a package has been updated
 	 */
-	public function onPostPackageUpdate(PackageEvent $event)
+	public function onPostPackageUpdate( PackageEvent $event )
 	{
 		/** @var \Composer\Package\CompletePackage $package */
 		$package = $event->getOperation()->getTargetPackage();
 
-		$this->cleanPackage($package);
+		$this->cleanPackage( $package );
 	}
 
 	/**
@@ -111,15 +110,15 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 	 *
 	 * @param CommandEvent $event
 	 */
-	public function onPostInstallUpdateCmd(CommandEvent $event)
+	public function onPostInstallUpdateCmd( CommandEvent $event )
 	{
 		/** @var \Composer\Repository\WritableRepositoryInterface $repository */
 		$repository = $this->composer->getRepositoryManager()->getLocalRepository();
 
 		/** @var \Composer\Package\CompletePackage $package */
-		foreach ($repository->getPackages() as $package) {
-			if ($package instanceof BasePackage) {
-				$this->cleanPackage($package);
+		foreach ( $repository->getPackages() as $package ) {
+			if ( $package instanceof BasePackage ) {
+				$this->cleanPackage( $package );
 			}
 		}
 
@@ -134,46 +133,45 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 	 *
 	 * @SuppressWarnings(PHPMD.NPathComplexity)
 	 */
-	protected function cleanPackage(BasePackage $package)
+	protected function cleanPackage( BasePackage $package )
 	{
-		$vendorDir   = $this->config->get('vendor-dir');
-		$installDir  = $this->config->get('installer-paths');
-		$targetDir   = $package->getTargetDir();
-		$packageName = $package->getPrettyName();
-		$packageDir  = $targetDir ? $packageName . '/' . $targetDir : $packageName;
+		$vendorDir    = $this->config->get( 'vendor-dir');
+		$installDir   = $this->config->get( 'installer-paths' );
+		$targetDir    = $package->getTargetDir();
+		$packageName  = $package->getPrettyName();
+		$packageDir   = $targetDir ? $packageName . '/' . $targetDir : $packageName;
+		$packageRules = $this->getRules( $packageName );
 
-		$rules = isset($this->rules[$packageName]) ? $this->rules[$packageName] : null;
-
-		if (!$rules) {
-			$this->io->writeError('Rules not found: ' . $packageName);
+		if ( ! $packageRules ) {
+			$this->io->writeError( 'Rules not found: ' . $packageName );
 			return false;
 		}
 
-		$dir = $this->filesystem->normalizePath(realpath($vendorDir . '/' . $packageDir));
+		$dir = $this->filesystem->normalizePath( realpath( $vendorDir . '/' . $packageDir ) );
 
-		if (!is_dir($dir)) {
+		if ( ! is_dir( $dir ) ) {
 			$vendorDir  = $installDir;
-			$packageDir = explode('/', $packageName)[1];
+			$packageDir = explode( '/', $packageName )[1];
 
-			$dir = $this->filesystem->normalizePath(realpath($vendorDir . '/' . $packageDir));
+			$dir = $this->filesystem->normalizePath( realpath( $vendorDir . '/' . $packageDir ) );
 		}
 
-		if (!is_dir($dir)) {
-			$this->io->writeError('Vendor dir not found: ' . $vendorDir . '/' . $packageDir);
+		if ( ! is_dir( $dir ) ) {
+			$this->io->writeError( 'Vendor dir not found: ' . $vendorDir . '/' . $packageDir );
 			return false;
 		}
 
-		foreach ((array)$rules as $part) {
+		foreach ( (array) $packageRules as $part ) {
 			// Split patterns for single globs (should be max 260 chars)
-			$patterns = (array)$part;
+			$patterns = (array) $part;
 
-			foreach ($patterns as $pattern) {
+			foreach ( $patterns as $pattern ) {
 				try {
-					foreach (glob($dir . '/' . $pattern) as $file) {
+					foreach ( glob( $dir . '/' . $pattern ) as $file ) {
 						$this->filesystem->remove($file);
 					}
-				} catch (\Exception $e) {
-					$this->io->write("Could not parse $packageDir ($pattern): " . $e->getMessage());
+				} catch ( \Exception $e ) {
+					$this->io->write( "Could not parse $packageDir ($pattern): " . $e->getMessage() );
 				}
 			}
 		}
@@ -191,14 +189,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 	 */
 	protected function cleanVendor()
 	{
-		$vendorDir = $this->config->get('vendor-dir');
-		$installers = $this->filesystem->normalizePath(realpath($vendorDir . '/composer/installers'));
-		$license = $this->filesystem->normalizePath(realpath($vendorDir . '/composer/LICENSE'));
-		$binaries = $this->filesystem->normalizePath(realpath($vendorDir . '/bin'));
-		$files = array( $installers, $license, $binaries );
+		$vendorDir  = $this->config->get( 'vendor-dir' );
+		$installers = $this->filesystem->normalizePath( realpath( $vendorDir . '/composer/installers' ) );
+		$license    = $this->filesystem->normalizePath( realpath( $vendorDir . '/composer/LICENSE' ) );
+		$binaries   = $this->filesystem->normalizePath( realpath( $vendorDir . '/bin' ) );
+		$files      = array( $installers, $license, $binaries );
 
 		foreach ( $files as $file ) {
-			$this->filesystem->remove($file);
+			$this->filesystem->remove( $file );
 		}
 
 		return true;
@@ -208,158 +206,130 @@ class Plugin implements PluginInterface, EventSubscriberInterface
 	 * Rule list
 	 * @return array
 	 */
-	public static function getRules()
+	protected function getRules( $package )
 	{
 		// Default patterns for common files
-		$docs = array(
-			'README*',
-			'readme*',
-			'CHANGELOG*',
-			'changelog*',
-			'CHANGES*',
-			'FAQ*',
-			'CONTRIBUTING*',
-			'HISTORY*',
-			'UPGRADING*',
-			'UPGRADE*',
-			'CREDITS*',
-			'LICENSE*',
-			'license*',
-			'RELEASE*',
-			'COPYING*',
-			'VERSION*',
-			'API*',
-			'INSTALL*',
-			'package*',
-			'demo',
-			'example',
-			'examples',
-			'doc',
-			'docs',
-			'pear*',
-			'phpdoc*',
-			'*.md',
+		$rules = array(
+			'docs' => array(
+				'README*',
+				'readme*',
+				'CHANGELOG*',
+				'changelog*',
+				'CHANGES*',
+				'FAQ*',
+				'CONTRIBUTING*',
+				'HISTORY*',
+				'UPGRADING*',
+				'UPGRADE*',
+				'CREDITS*',
+				'LICENSE*',
+				'license*',
+				'RELEASE*',
+				'COPYING*',
+				'VERSION*',
+				'API*',
+				'INSTALL*',
+				'package*',
+				'demo',
+				'example',
+				'examples',
+				'doc',
+				'docs',
+				'pear*',
+				'phpdoc*',
+				'*.md',
+			),
+			'tests' => array(
+				'.travis.yml',
+				'.scrutinizer.yml',
+				'.codeclimate.yml',
+				'.coveralls.yml',
+
+				'build.*',
+				'config.*',
+				'phpunit.*',
+				'phpunit-*',
+
+				'test',
+				'tests',
+				'Tests',
+				'example',
+				'examples',
+				'tutorials',
+				'travis',
+
+				'demo.php',
+				'test.php',
+				'example.php',
+				'sample.php',
+			),
+			'system' => array(
+				'.git*',
+				'.idea',
+				'.htaccess',
+				'.editorconfig',
+				'.phpstorm.meta.php',
+				'.php_cs',
+				'*.iml',
+				'composer.lock',
+				'bower*',
+
+				'Makefile',
+			),
+			'wp' => array(
+				'composer.json',
+				'composer.lock',
+				'uninstall.php',
+				'index.php',
+				'*.pot',
+				'*.dev.*',
+				'*.png',
+				'*.jpg',
+				'*.jpeg',
+				'*.gif',
+				'*.txt',
+			)
 		);
 
-		$tests = array(
-			'.travis.yml',
-			'.scrutinizer.yml',
-			'.codeclimate.yml',
-			'.coveralls.yml',
-			'.styleci.yml',
+		$cleanup          = $this->config->get( 'cleanup' );
+		$cleanup_disable  = isset( $cleanup['disable'] ) ? $cleanup['disable'] : null;
+		$cleanup_rules    = isset( $cleanup['rules'] ) ? $cleanup['rules'] : null;
+		$cleanup_packages = isset( $cleanup['packages'] ) ? $cleanup['packages'] : null;
 
-			'build.*',
-			'config.*',
-			'phpunit.*',
-			'phpunit-*',
+		if ( $cleanup_disable ) {
+			$disable_rules = isset( $cleanup_disable['rules'] ) ? $cleanup_disable['rules'] : null;
 
-			'test',
-			'tests',
-			'Tests',
-			'example',
-			'examples',
-			'tutorials',
-			'travis',
+			if ( $disable_rules ) {
+				if ( ! is_array( $disable_rules ) )
+					$disable_rules = array( $disable_rules );
 
-			'demo.php',
-			'test.php',
-			'example.php',
-			'sample.php',
-		);
+				$rules = $rules - $disable_rules;
+			}
 
-		$system = array(
-			'.git*',
-			'.idea',
-			'.htaccess',
-			'.editorconfig',
-			'.phpstorm.meta.php',
-			'.php_cs',
-			'*.iml',
-			'composer.lock',
-			'bower*',
+			$disable_packages = isset( $cleanup_disable['packages'] ) ? $cleanup_disable['packages'] : null;
+			if ( $disable_packages and in_array( $package, $disable_packages ) ) return;
+		}
 
-			'Makefile',
-		);
+		if ( $cleanup_rules ) {
+			if ( ! is_array( $cleanup_rules ) )
+				$cleanup_rules = array( $cleanup_rules );
 
-		$wp = array(
-			'composer.json',
-			'composer.lock',
-			'uninstall.php',
-			'index.php',
-			'*.pot',
-			'*.dev.*',
-			'*.png',
-			'*.jpg',
-			'*.jpeg',
-			'*.gif',
-			'*.txt',
-		);
+			$rules = $rules + $cleanup_rules;
+		}
 
-		return array(
-			// Core
-			'composer/installers'               => array( $docs, $tests, $system, array( 'installers' ) ),
+		if ( $cleanup_packages ) {
+			$package_rules = isset( $cleanup_packages[$package] ) ? $cleanup_packages[$package] : array();
 
-			// Libraries
-			'jonian/composer-cleanup'           => array( $docs, $tests, $system ),
-			'aura/autoload'                     => array( $docs, $tests, $system ),
-			'bensquire/php-image-optim'         => array( $docs, $tests, $system ),
-			'filp/whoops'                       => array( $docs, $tests, $system ),
-			'masterminds/html5'                 => array( $docs, $tests, $system, array( 'sami.php', 'bin' ) ),
-			'querypath/querypath'               => array( $docs, $tests, $system, array( 'patches', 'bin', 'phar' ) ),
-			'predis/predis'                     => array( $docs, $tests, $system ),
-			'danielstjules/stringy'             => array( $docs, $tests, $system ),
-			'maximebf/debugbar'                 => array( $docs, $tests, $system ),
-			'mikehaertl/tmpfile'                => array( $docs, $tests, $system ),
-			'mikehaertl/phpwkhtmltopdf'         => array( $docs, $tests, $system ),
-			'mikehaertl/php-shellcommand'       => array( $docs, $tests, $system ),
-			'mjphaynes/php-resque'              => array( $docs, $tests, $system ),
-			'erusev/parsedown'                  => array( $docs, $tests, $system ),
-			'hashids/hashids'                   => array( $docs, $tests, $system ),
-			'html2text/html2text'               => array( $docs, $tests, $system ),
-			'league/csv'                        => array( $docs, $tests, $system ),
-			'lusitanian/oauth'                  => array( $docs, $tests, $system ),
-			'mailchimp/mailchimp'               => array( $docs, $tests, $system ),
-			'matthiasmullie/minify'             => array( $docs, $tests, $system, array( 'bin' ) ),
-			'matthiasmullie/path-converter'     => array( $docs, $tests, $system ),
-			'mike182uk/cart'                    => array( $docs, $tests, $system ),
-			'mikehaertl/php-tmpfile'            => array( $docs, $tests, $system ),
-			'misd/linkify'                      => array( $docs, $tests, $system ),
-			'money/money'                       => array( $docs, $tests, $system ),
-			'monolog/monolog'                   => array( $docs, $tests, $system ),
-			'mustache/mustache'                 => array( $docs, $tests, $system, array( 'vendor' ) ),
-			'nojacko/email-validator'           => array( $docs, $tests, $system ),
-			'nojacko/email-data-disposable'     => array( $docs, $tests, $system ),
-			'pelago/emogrifier'                 => array( $docs, $tests, $system, array( 'Configuration' ) ),
-			'psr/log'                           => array( $docs, $tests, $system ),
-			'seostats/seostats'                 => array( $docs, $tests, $system ),
-			'symfony/console'                   => array( $docs, $tests, $system ),
-			'symfony/polyfill-mbstring'         => array( $docs, $tests, $system ),
-			'symfony/process'                   => array( $docs, $tests, $system ),
-			'symfony/yaml'                      => array( $docs, $tests, $system ),
-			'symfony/var-dumper'                => array( $docs, $tests, $system ),
-			'tracy/tracy'                       => array( $docs, $tests, $system ),
-			'vegeta/fluxer'                     => array( $docs, $tests, $system ),
-			'zaininnari/html-minifier'          => array( $docs, $tests, $system ),
+			if ( ! is_array( $package_rules ) )
+				$package_rules = array( $package_rules );
 
-			// Plugins
-			'humanmade/mercator'                     => array( $docs, $tests, $system, $wp ),
-			'wcm/wp-importer'                        => array( $docs, $tests, $system, $wp ),
-			'roots/wp-password-bcrypt'               => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/blogger-importer'     => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/duplicate-post'       => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/livejournal-importer' => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/movabletype-importer' => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/opml-importer'        => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/piklist'              => array( $docs, $tests, $system, $wp, array( 'add-ons' ) ),
-			'wpackagist-plugin/playbuzz'             => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/wordpress-seo'        => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/json-rest-api'        => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/wp-search-live'       => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/polylang'             => array( $docs, $tests, $system, $wp, array( 'lingotek' ) ),
-			'wpackagist-plugin/rss-importer'         => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/simple-page-ordering' => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/tumblr-importer'      => array( $docs, $tests, $system, $wp ),
-			'wpackagist-plugin/wpcat2tag-importer'   => array( $docs, $tests, $system, $wp ),
-		);
+			if ( ! empty( $package_rules ) )
+				$rules[] = $package_rules;
+		}
+
+		if ( stripos( $package, 'wpackagist-plugin' ) === false )
+			unset( $rules['wp'] );
+
+		return $rules;
 	}
 }
