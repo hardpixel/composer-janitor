@@ -1,12 +1,12 @@
-Composer Cleanup Plugin
+Composer Janitor Plugin
 =======================
 
-Cleanup Composer packages to remove unneeded files and folders if you intend to keep you project dependencies in version control. The plugin removes files that belong to 4 default rule groups ([docs](https://github.com/hardpixel/composer-cleanup/blob/master/src/Plugin.php#L213), [tests](https://github.com/hardpixel/composer-cleanup/blob/master/src/Plugin.php#L242), [system](https://github.com/hardpixel/composer-cleanup/blob/master/src/Plugin.php#L266), [wp](https://github.com/hardpixel/composer-cleanup/blob/master/src/Plugin.php#L279)) from all the project dependencies when you run `composer install` or `composer-update`. You can configure extra rule groups or disable default groups by adding options to the composer.json file.
+Cleanup Composer packages to remove unneeded files and folders if you intend to keep you project dependencies in version control. The plugin removes files that belong to 4 default rule groups ([docs](https://github.com/hardpixel/composer-janitor/blob/master/src/Plugin.php#L213), [tests](https://github.com/hardpixel/composer-janitor/blob/master/src/Plugin.php#L242), [system](https://github.com/hardpixel/composer-janitor/blob/master/src/Plugin.php#L266), [wp](https://github.com/hardpixel/composer-janitor/blob/master/src/Plugin.php#L279)) from all the project dependencies when you run `composer install` or `composer-update`. You can configure extra rule groups or disable default groups by adding options to the composer.json file.
 
 
 ### Configure
 
-You can configure Composer Cleanup Plugin by adding a `cleanup` key in your composer.json.
+You can configure Composer Janitor Plugin by adding a `cleanup` key in your composer.json.
 
 `disable`  : Disable default rule groups  
 `rules`    : Define custom rule groups  
