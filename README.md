@@ -14,29 +14,29 @@ You can configure Composer Janitor Plugin by adding a `cleanup` key in your comp
 
 Below you can see an example configuration.
 
-	"config": {
-		"cleanup": {
-			"disable": ["system"],
-			"rules": {
-				"custom": [
-					".git*",
-					".idea",
-					".htaccess",
-					".editorconfig",
-					".phpstorm.meta.php",
-					".php_cs",
-					"*.iml",
-					"composer.lock",
-					"bower*"
-				]
-			},
-			"packages": {
-				"masterminds/html5": ["sami.php", "bin"],
-				"querypath/querypath": ["patches", "bin", "phar"],
-				"mustache/mustache": "vendor",
-				"pelago/emogrifier": "Configuration",
-				"wpackagist-plugin/piklist": "add-ons",
-				"wpackagist-plugin/polylang": "lingotek"
-			}
-		}
-	}
+  "config": {
+    "cleanup": {
+      "disable": ["system"],
+      "rules": {
+        "custom": [
+          ".git*",
+          ".idea",
+          ".htaccess",
+          ".editorconfig",
+          ".phpstorm.meta.php",
+          ".php_cs",
+          "*.iml",
+          "composer.lock",
+          "bower*"
+        ]
+      },
+      "packages": {
+        "masterminds/html5": ["sami.php", "bin"],
+        "querypath/querypath": ["patches", "bin", "phar"],
+        "mustache/mustache": "vendor",
+        "pelago/emogrifier": "Configuration",
+        "wpackagist-plugin/piklist": "add-ons",
+        "wpackagist-plugin/polylang": "lingotek"
+      }
+    }
+  }
